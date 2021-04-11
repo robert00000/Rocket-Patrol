@@ -1,20 +1,23 @@
-class Spaceship extends Phaser.GameObjects.Sprite{
-    constructor(scene, x, y, texture, frame){
+class Spaceship extends Phaser.GameObjects.Sprite {
+    constructor(scene, x, y, texture, frame, pointValue){
         super(scene, x, y, texture, frame);
-
-        scene.add.existing(this);
-        this.isFiring = false;
-        this.moveSpeed = 2;
+        scene.add.existing(this); // add to existing scene
+        this.points = pointValue; // store pointValue
+        this.moveSpeed = 3;
     }
     update(){
-        // left/right movement
-        if(!this.isFiring){
-            if(keyLEFT.isDown && this.x >= borderUISize + this.width){
-                this.x -= this.moveSpeed;
-            }else if (keyRIGHT.isDown && this.x <= game.config.width - borderUISize - this.width){
-                this.x += this.moveSpeed;
-            }
+
+        // move spaceship left
+        this.x -= this.moveSpeed;
+        // wrap around from left to right edge
+        if(this.x <= 0 - this.width){
+            this.reset();
         }
-        
+
     }
+
+    reset(){
+        this.x = game.config.width;
+    }
+    
 }
