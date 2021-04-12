@@ -77,10 +77,23 @@ class Play extends Phaser.Scene{
             this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← to Menu', scoreConfig).setOrigin(0.5);
             this.gameOver = true;
         }, null, this);
+
+        // animation config
+        this.anims.create({
+            key: 'explode',
+            frames: this.anims.generateFrameNumbers('explosion', { start: 0, end: 9, first: 0}),
+            frameRate: 30
+        });
+
+        
     }
     update(){
-        this.starfield.tilePositionX -= starSpeed;
-
+        this.starfield.tilePositionX -= 4;
+        
+        //check key input for restart
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)){
+            this.scene.restart();
+        }
         //update rocket
         this.p1Rocket.update();
         // update spaceships (x3)
@@ -91,15 +104,21 @@ class Play extends Phaser.Scene{
         // check collisions
         if(this.checkCollision(this.p1Rocket, this.ship03)){
             this.p1Rocket.reset();
-            this.ship03.reset();
+            this.shipExplode(this.ship03);
         }
         if(this.checkCollision(this.p1Rocket, this.ship02)){
             this.p1Rocket.reset();
-            this.ship02.reset();
+            this.shipExplode(this.ship02);
         }
         if(this.checkCollision(this.p1Rocket, this.ship01)){
             this.p1Rocket.reset();
-            this.ship01.reset();
+            this.shipExplode(this.ship01);
+        }
+        if (!this.gameOver){
+            this.p1Rocket.update();
+            this.ship01.update();
+            this.ship02.update();
+            this.ship03.update();
         }
     }
 
@@ -115,16 +134,18 @@ class Play extends Phaser.Scene{
         }
     }
 
-    shipExplode(ship){
-        //temporarily hide ship
+    shipExplode(ship) {
+        // temporarily hide ship
         ship.alpha = 0;
-        // create explosion sprite ate ships position
+        // create explosion sprite at ship's position
         let boom = this.add.sprite(ship.x, ship.y, 'explosion').setOrigin(0, 0);
-        boom.anims.play('explode');
-        boom.on('animationcomplete', () => {
-            ship.reset();
-            ship.alpha = 1;
-            boom.destroy();
-        })
-    }
+        boom.anims.play('explode');             // play explode animation
+        boom.on('animationcomplete', () => {    // callback after anim completes
+          ship.reset();                         // reset ship position
+          ship.alpha = 1;                       // make ship visible again
+          boom.destroy();                       // remove explosion sprite
+        });       
+        this.p1Score += ship.points;
+        this.scoreLeft.text = this.p1Score;
+      }
 }
